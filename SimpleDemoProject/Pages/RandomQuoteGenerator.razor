@@ -1,0 +1,47 @@
+﻿@page "/quote-generator"
+@using System.Net.Http
+@using Newtonsoft.Json
+@using SimpleDemoProject.Model
+@inject HttpClient HttpClient
+
+<h3>Random Quote Generator</h3>
+
+<div>
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <p>@randomQuote</p>
+    }
+</div>
+
+<button @onclick="GenerateRandomQuote">Generate Quote</button>
+
+@code {
+    private string randomQuote;
+    private bool isLoading;
+
+    private async Task GenerateRandomQuote()
+    {
+        isLoading = true;
+        try
+        {
+            // Fetch a random quote from the Quotable API
+            var response = await HttpClient.GetAsync("https://api.quotable.io/random");
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync();
+            var quote = JsonConvert.DeserializeObject<QuoteResponse>(json);
+            randomQuote = $"{quote.content} - {quote.author}";
+        }
+        catch (Exception ex)
+        {
+            randomQuote = "Failed to fetch quote. Please try again later.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

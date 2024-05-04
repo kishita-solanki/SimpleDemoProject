@@ -1,0 +1,31 @@
+﻿@page "/word-counter"
+
+<h3>Word Counter</h3>
+
+<div>
+    <textarea @bind="textInput" placeholder="Enter text..." rows="5" style="width: 40%;" @oninput="UpdateWordCount"></textarea>
+</div>
+
+@if (wordCount.HasValue)
+{
+    <p>Word Count: @wordCount</p>
+}
+
+@code {
+    private string textInput;
+    private int? wordCount;
+
+    private void UpdateWordCount(ChangeEventArgs e)
+    {
+        textInput = e.Value.ToString();
+        if (!string.IsNullOrWhiteSpace(textInput))
+        {
+            var words = textInput.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            wordCount = words.Length;
+        }
+        else
+        {
+            wordCount = 0;
+        }
+    }
+}

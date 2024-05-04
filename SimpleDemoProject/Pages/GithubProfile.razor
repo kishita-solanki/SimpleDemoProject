@@ -1,0 +1,67 @@
+﻿@page "/github-profile"
+@using System.Net.Http
+@using SimpleDemoProject.Model
+@inject HttpClient HttpClient
+@inject IJSRuntime JSRuntime
+
+<h3>GitHub Profile Viewer</h3>
+
+<div>
+    <input @bind="username" placeholder="Enter GitHub username" />
+    <button @onclick="FetchProfile">Fetch Profile</button>
+</div>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (profile != null)
+{
+    <div>
+        <img src="@profile.avatar_url" alt="Avatar" height="100" width="100" />
+        <h4>@profile.login</h4>
+        <p>Public Repo: @profile.public_repos</p>
+        <p>Followers: @profile.followers</p>
+        <!-- Display other profile information -->
+        <button @onclick="OpenProfileInNewTab">Open Profile in New Tab</button>
+    </div>
+}
+else if (error != null)
+{
+    <p>Error: @error</p>
+}
+
+@code {
+    private string username;
+    public GitHubProfileResponse profile;
+    private string error;
+    private bool isLoading;
+
+    private async Task FetchProfile()
+    {
+        isLoading = true;
+        try
+        {
+            profile = await HttpClient.GetFromJsonAsync<GitHubProfileResponse>($"https://api.github.com/users/{username}");
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenProfileInNewTab()
+    {
+        if (profile != null)
+        {
+            string userProfileUrl = $"https://github.com/{profile.login}";
+            // Open the profile in a new tab
+            JSRuntime.InvokeVoidAsync("window.open", userProfileUrl, "_blank");
+        }
+    }
+}
+
